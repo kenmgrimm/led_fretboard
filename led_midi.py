@@ -12,34 +12,58 @@ LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 
 #  E A D G B E
-openNotes = [40, 45, 50, 55, 59, 65]
+OPEN_NOTES = [40, 45, 50, 55, 59, 65]
+NUM_LEDS = 100
+
+NUM_STRINGS = len(OPEN_NOTES)
+LEDS_IN_AN_OCTAVE = 12 * NUM_STRINGS
+
+# brightness = strip.setBrightness
 
 def ledIndexesByMidiNote(midiNote):
-  lightNumbers = []
+  ledIndexes = []
 
-  stringIndex = -1
-  for openNote in openNotes:
-    stringIndex += 1
-    if midiNote < openNote: continue;
+  for stringNumber in range(0, NUM_STRINGS):
+    ledIndexes.extend(indexesOnString(stringNumber, midiNote))
 
-    diff = midiNote - openNote
-    lightNumber = 6 * diff + stringIndex
+  if len(ledIndexes) > 0:
+    print "Midi Note {0} maps to led indexes {1} ".format(midiNote, ", ".join(ledIndexes))
 
-    if lightNumber > 99: continue;
+  return sorted(ledIndexes)
 
-    lightNumbers.append(str(lightNumber))
 
-  print "Midi Note {0} maps to led indexes {1} ".format(midiNote, ", ".join(lightNumbers))
-  return lightNumbers;
+def indexesOnString(stringNumber, midiNote):
+  ledIndexes = []
+
+  ledIndex = firstIndexOnString(stringNumber, midiNote)
+  # print "{0}: {1}: {2}".format(stringNumber, midiNote, ledIndex)
+
+  if ledIndex >= 0 and ledIndex < NUM_LEDS:
+    ledIndexes.append(str(ledIndex))
+  # if we wanted to find all octaves of note
+  # while ledIndex >= 0 and ledIndex < NUM_LEDS:
+  #   ledIndexes.append(str(ledIndex))
+
+  #   ledIndex += LEDS_IN_AN_OCTAVE
+
+  return ledIndexes
+
+
+def firstIndexOnString(stringNumber, midiNote):
+  openNote = OPEN_NOTES[stringNumber]
+
+  firstLedOffsetFromOpen = midiNote - openNote
+
+  return NUM_STRINGS * firstLedOffsetFromOpen + stringNumber
 
 
 def lightUpScales(lowestNote):
   for octave in [0, 1, 2, 3, 4, 5]: # (octaves)
-    for scaleSemiTone in [0, 1, 3, 5, 6, 8, 10]:   # (nat_minor_scale_semi_tone)
-      turnOn(ledIndexesByMidiNote(lowestNote + (octave * 12) + scaleSemiTone))
+    # for scaleSemiTone in [0, 1, 3, 5, 6, 8, 10]:   # (nat_minor_scale_semi_tone)
+    #   turnOn(ledIndexesByMidiNote(lowestNote + (octave * 12) + scaleSemiTone))
 
-    for pentatonicSemiTone in [0, 1, 3, 5, 6, 10]:    #  (pentatonic_semi_tone)
-      turnOn(ledIndexesByMidiNote(lowestNote + (octave * 12) + pentatonicSemiTone))
+    # for pentatonicSemiTone in [0, 1, 3, 5, 6, 10]:    #  (pentatonic_semi_tone)
+    #   turnOn(ledIndexesByMidiNote(lowestNote + (octave * 12) + pentatonicSemiTone))
 
     turnOn(ledIndexesByMidiNote(lowestNote + (octave * 12)))
 
@@ -50,6 +74,11 @@ def turnOn(indexes):
     strip.setPixelColor(int(led_index), red)
     strip.show()
 
+def clearStrip
+  for i in range(0, 255):
+    strip.setPixelColor(i, Color(0, 0, 0))
+    strip.show()
+
 
 # Main program logic follows:
 if __name__ == '__main__':
@@ -58,24 +87,22 @@ if __name__ == '__main__':
   # Intialize the library (must be called once before other functions).
   strip.begin()
 
-  red = Color(0, 100, 0)
-  
+  # red = Color(0, 100, 0)
+
 #  for led_index in ledIndexesByMidiNote(55):
 #    strip.setPixelColor(int(led_index), red)
 #    strip.show()
 #    time.sleep(900.0 / 1000.0)
 
+  ledIndexesByMidiNote(40)
   ledIndexesByMidiNote(45)
   ledIndexesByMidiNote(47)
   ledIndexesByMidiNote(50)
   ledIndexesByMidiNote(55)
 
+  print "Scales for 50"
   lightUpScales(50)
 
   time.sleep(5)
-
-  for i in range(0, 255):
-    strip.setPixelColor(i, Color(0, 0, 0))
-    strip.show()
-
+  clearStrip
 
